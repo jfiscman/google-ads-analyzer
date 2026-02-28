@@ -6,6 +6,9 @@
 credentials.json
 scripts/credentials.json
 scripts/oauth_client.json
+oauth_client.json
+client_secret*.json
+*_credentials.json
 
 # OS
 .DS_Store
