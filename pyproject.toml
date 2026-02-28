@@ -25,9 +25,9 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://github.com/agenciaclica/google-ads-mcp"
-repository = "https://github.com/agenciaclica/google-ads-mcp.git"
-issues = "https://github.com/agenciaclica/google-ads-mcp/issues"
+homepage = "https://github.com/mathiaschu/google-ads-mcp"
+repository = "https://github.com/mathiaschu/google-ads-mcp.git"
+issues = "https://github.com/mathiaschu/google-ads-mcp/issues"
 
 [project.scripts]
 google-ads-mcp = "ads_mcp.server:run_server"
