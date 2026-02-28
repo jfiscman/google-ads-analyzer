@@ -1,4 +1,6 @@
-# Google Ads MCP Server (Experimental)
+# Google Ads MCP Server (Fork with Write Tools)
+
+Fork of [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) with 6 additional write tools for managing campaigns directly from your AI assistant.
 
 This repo contains the source code for running a local
 [MCP](https://modelcontextprotocol.io) server that interacts with the
@@ -11,11 +13,20 @@ The server uses the
 to provide several
 [Tools](https://modelcontextprotocol.io/docs/concepts/tools) for use with LLMs.
 
-### Tools available
+### Read tools (from upstream)
 
-- `search`: Retrieves information about the Google Ads account.
-- `list_accessible_customers`: Returns names of customers directly accessible
+- `search`: Retrieves information about the Google Ads account via GAQL queries.
+- `list_accessible_customers`: Returns IDs of customers directly accessible
   by the user authenticating the call.
+
+### Write tools (added in this fork)
+
+- `add_negative_keywords`: Adds negative keywords to a campaign (BROAD, PHRASE, or EXACT match).
+- `update_campaign_status`: Pauses or enables a campaign.
+- `update_campaign_budget`: Changes the daily budget for a campaign (in account currency, e.g. 50.00 for $50).
+- `update_bidding_strategy`: Changes bid strategy (TARGET_CPA, TARGET_ROAS, MAXIMIZE_CONVERSIONS, MAXIMIZE_CONVERSION_VALUE) with optional target value.
+- `update_ad_group_status`: Pauses or enables an ad group.
+- `update_ad_status`: Pauses or enables an ad.
 
 ## Notes
 

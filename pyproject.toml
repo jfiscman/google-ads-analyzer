@@ -1,6 +1,6 @@
 [project]
 name = "google-ads-mcp"
-version = "0.0.1"
+version = "0.1.0"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 dependencies = [
@@ -8,7 +8,7 @@ dependencies = [
     "mcp[cli]>=1.2.0"
 ]
 
-description = "MCP Server for Google Ads, depends on Google Ads API."
+description = "MCP Server for Google Ads with read and write tools. Fork of googleads/google-ads-mcp."
 readme = "README.md"
 authors = [{ name = "Dean Lukies", email = "lukiesd@users.noreply.github.com" }]
 keywords = ["Google Ads", "Google Ads API", "MCP"]
@@ -25,9 +25,9 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://github.com/googleads/google-ads-mcp"
-repository = "https://github.com/googleads/google-ads-mcp.git"
-issues = "https://github.com/googleads/google-ads-mcp/issues"
+homepage = "https://github.com/agenciaclica/google-ads-mcp"
+repository = "https://github.com/agenciaclica/google-ads-mcp.git"
+issues = "https://github.com/agenciaclica/google-ads-mcp/issues"
 
 [project.scripts]
 google-ads-mcp = "ads_mcp.server:run_server"
