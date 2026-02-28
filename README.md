@@ -6,6 +6,7 @@ A Claude Code skill + MCP server setup for expert-level Google Ads campaign anal
 
 When installed, Claude Code can:
 
+**Read & Analyze:**
 - Query your Google Ads accounts directly using GAQL (Google Ads Query Language)
 - Analyze campaign, ad group, keyword, and search term performance
 - Diagnose Quality Score issues at the component level (expected CTR, ad relevance, landing page)
@@ -15,12 +16,18 @@ When installed, Claude Code can:
 - Review search term reports and identify negative keyword gaps
 - Generate structured analysis reports with prioritized recommendations
 
+**Write & Manage:**
+- Add negative keywords to campaigns (Broad, Phrase, or Exact match)
+- Pause or enable campaigns, ad groups, and individual ads
+- Update daily budgets
+- Change bidding strategies (Target CPA, Target ROAS, Maximize Conversions, Maximize Conversion Value)
+
 ## Components
 
 | Component | What it does |
 |---|---|
 | **Skill** (`skill/`) | Analysis framework with 12 reference docs that Claude loads as context |
-| **MCP Server** | Google's official [`google-ads-mcp`](https://github.com/googleads/google-ads-mcp) — connects Claude Code to the Google Ads API |
+| **MCP Server** | Fork of [`google-ads-mcp`](https://github.com/mathiaschu/google-ads-mcp) with 6 write tools — connects Claude Code to the Google Ads API for reading and managing campaigns |
 | **Scripts** (`scripts/`) | OAuth setup helper |
 
 ## Prerequisites
@@ -107,6 +114,7 @@ Claude should connect to your account and show available accounts.
 
 Once installed, you can ask Claude things like:
 
+**Analysis:**
 - "Analyze my Google Ads campaigns from the last 30 days"
 - "What's my Quality Score distribution across keywords?"
 - "Show me Impression Share breakdown — am I losing to budget or rank?"
@@ -115,6 +123,12 @@ Once installed, you can ask Claude things like:
 - "Deep dive into my Performance Max campaign"
 - "Compare this month vs last month across all campaigns"
 - "Which campaigns have the highest wasted spend?"
+
+**Management:**
+- "Pause campaign X"
+- "Add these negative keywords to my Search campaign: [list]"
+- "Increase the daily budget on campaign Y to $100"
+- "Switch campaign Z to Target ROAS at 4x"
 
 You can also share screenshots or exported data from the Google Ads UI — the skill works with any data format.
 

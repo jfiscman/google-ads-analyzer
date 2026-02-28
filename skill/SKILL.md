@@ -7,13 +7,16 @@ description: "Provides expert-level analysis and diagnosis for Google Ads campai
 
 ## When to Use This Skill
 
-Use this skill when you need to **analyze and diagnose Google Ads campaign performance**, including:
+Use this skill when you need to **analyze, diagnose, and manage Google Ads campaigns**, including:
 - Interpreting campaign, ad group, or keyword-level performance data
 - Running GAQL queries to pull metrics from the Google Ads API
 - Diagnosing Quality Score, Impression Share, and Smart Bidding issues
 - Evaluating Performance Max campaigns (asset groups, signals, feed quality)
 - Analyzing search term reports and negative keyword coverage
 - Generating structured analysis reports with actionable recommendations
+- Managing campaigns: pause/enable campaigns, ad groups, and ads
+- Updating budgets and bidding strategies
+- Adding negative keywords based on search term analysis
 
 ## Result Recommendations (MANDATORY for Final Reports)
 
@@ -153,3 +156,18 @@ Structure every analysis report as:
 5. **Conversion & Bidding Analysis** — Tracking health, Smart Bidding status, lag impact
 6. **Search Terms & Negatives** — Wasted spend, opportunities, negative keyword gaps
 7. **Recommendations** — Prioritized, actionable, with expected impact and effort level
+
+## Write Tools (Campaign Management)
+
+The MCP server includes 6 write tools for acting on analysis findings:
+
+| Tool | What it does |
+| :--- | :--- |
+| `add_negative_keywords` | Adds negative keywords to a campaign (BROAD, PHRASE, or EXACT match) |
+| `update_campaign_status` | Pauses or enables a campaign |
+| `update_campaign_budget` | Changes the daily budget (in account currency, e.g. 50.00 for $50) |
+| `update_bidding_strategy` | Changes bid strategy: TARGET_CPA, TARGET_ROAS, MAXIMIZE_CONVERSIONS, MAXIMIZE_CONVERSION_VALUE |
+| `update_ad_group_status` | Pauses or enables an ad group |
+| `update_ad_status` | Pauses or enables an ad |
+
+**Important:** Always confirm with the user before executing write operations. Present the intended change clearly and wait for approval.

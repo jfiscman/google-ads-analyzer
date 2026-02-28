@@ -176,7 +176,7 @@ def update_mcp_json(developer_token, login_customer_id):
         "command": "uvx",
         "args": [
             "--from",
-            "git+https://github.com/googleads/google-ads-mcp.git",
+            "git+https://github.com/mathiaschu/google-ads-mcp.git",
             "google-ads-mcp",
         ],
         "env": env,
