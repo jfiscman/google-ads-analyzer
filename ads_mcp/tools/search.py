@@ -14,9 +14,15 @@
 
 """Tools for exposing the API Search method to the MCP server."""
 
+import json
 from typing import Any, Dict, List
 from ads_mcp.coordinator import mcp
 import ads_mcp.utils as utils
+
+# Max rows returned to the client to avoid flooding the context window
+_MAX_RESPONSE_ROWS = 100
+# Default LIMIT applied to GAQL queries when none is specified
+_DEFAULT_LIMIT = 500
 
 
 def search(
@@ -26,7 +32,7 @@ def search(
     conditions: List[str] = None,
     orderings: List[str] = None,
     limit: int | str = None,
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     """Fetches data from the Google Ads API using the search method
 
     Args:
@@ -35,7 +41,7 @@ def search(
         resource: The resource to return fields from
         conditions: List of conditions to filter the data, combined using AND clauses
         orderings: How the data is ordered
-        limit: The maximum number of rows to return
+        limit: The maximum number of rows to return (default: 500)
 
     """
 
@@ -49,8 +55,9 @@ def search(
     if orderings:
         query_parts.append(f" ORDER BY {','.join(orderings)}")
 
-    if limit:
-        query_parts.append(f" LIMIT {limit}")
+    # Apply default limit if none specified
+    effective_limit = int(limit) if limit else _DEFAULT_LIMIT
+    query_parts.append(f" LIMIT {effective_limit}")
 
     query = "".join(query_parts)
     utils.logger.info(f"ads_mcp.search query {query}")
@@ -65,62 +72,96 @@ def search(
             final_output.append(
                 utils.format_output_row(row, batch.field_mask.paths)
             )
-    return final_output
+
+    total_rows = len(final_output)
+
+    # Truncate response to avoid flooding the context window
+    if total_rows > _MAX_RESPONSE_ROWS:
+        return {
+            "rows": final_output[:_MAX_RESPONSE_ROWS],
+            "total_rows": total_rows,
+            "returned_rows": _MAX_RESPONSE_ROWS,
+            "truncated": True,
+            "message": f"Showing first {_MAX_RESPONSE_ROWS} of {total_rows} rows. Use 'conditions' to filter or 'limit' to control the result size.",
+        }
+
+    return {
+        "rows": final_output,
+        "total_rows": total_rows,
+        "returned_rows": total_rows,
+        "truncated": False,
+    }
 
 
-def _search_tool_description() -> str:
-    """Returns the description for the `search` tool."""
-    # Add a warning that will be part of the description
-    file_content = (
-        "WARNING: The table of selectable fields is missing. "
-        "Tool may not function correctly."
-    )
-
+def _describe_resource(resource_name: str) -> Dict[str, Any]:
+    """Look up the selectable, filterable, and sortable fields for a specific GAQL resource."""
     try:
-        with open(utils.get_gaql_resources_filepath(), "r") as file:
-            file_content = file.read()
+        with open(utils.get_gaql_resources_filepath(), "r") as f:
+            resources = json.load(f)
+        for r in resources:
+            if r["resource"] == resource_name:
+                return r
+        return {"error": f"Resource '{resource_name}' not found. Use list_gaql_resources to see available resources."}
     except FileNotFoundError:
-        utils.logger.error("The specified file was not found.")
+        return {"error": "gaql_resources.json not found."}
 
-    return f"""
-{search.__doc__}
+
+def _list_resources() -> List[str]:
+    """List all available GAQL resource names."""
+    try:
+        with open(utils.get_gaql_resources_filepath(), "r") as f:
+            resources = json.load(f)
+        return [r["resource"] for r in resources]
+    except FileNotFoundError:
+        return []
+
+
+_SEARCH_DESCRIPTION = """Fetches data from the Google Ads API using GAQL (Google Ads Query Language).
 
 ### Hints
-    Language Grammar can be found at https://developers.google.com/google-ads/api/docs/query/grammar
-    All resources and descriptions are found at https://developers.google.com/google-ads/api/fields/v21/overview
+- Grammar: https://developers.google.com/google-ads/api/docs/query/grammar
+- All resources: https://developers.google.com/google-ads/api/fields/v21/overview
+- customer_id must be a string of numbers without punctuation (e.g. 1234567890, NOT 123-456-7890)
+- Dates must be YYYY-MM-DD with dashes. Date literals from the Grammar must NEVER be used. Date ranges must have start AND end.
+- Default LIMIT is 500. Responses are truncated to 100 rows max. Use conditions to filter.
+- change_event requires LIMIT <= 10000
+- For conversion issues try offline_conversion_upload_conversion_action_summary
+- Conversions docs: https://developers.google.com/google-ads/api/docs/conversions/upload-summaries
 
-    For Conversion issues try looking in offline_conversion_upload_conversion_action_summary
+### IMPORTANT: Use list_gaql_resources and describe_gaql_resource tools
+Before writing a query, use `list_gaql_resources` to see available resources and `describe_gaql_resource` to get the exact field names for the resource you want to query. Fields must match exactly — no wildcards or partial names.
 
-### Hint for customer_id
-    should be a string of numbers without punctuation
-    if presented in the form 123-456-7890 remove the hyphens and use 1234567890
+### Common resources
+campaign, ad_group, ad_group_ad, keyword_view, search_term_view, campaign_budget, ad_group_criterion, customer, bidding_strategy, conversion_action, campaign_criterion, geographic_view, gender_view, age_range_view, change_event
 
-### Hints for Dates
-    All dates should be in the form YYYY-MM-DD and must include the dashes (-)
-    Date literals from the Grammar must NEVER be used
-    Date ranges should be finite and must include a start and end date
+### Common metric fields (prefix with metrics.)
+impressions, clicks, cost_micros, conversions, conversions_value, ctr, average_cpc, average_cpm, all_conversions, all_conversions_value, cost_per_conversion, interaction_rate, video_views, search_impression_share, search_top_impression_percentage
 
-### Hints for limits
-    Requests to resource change_event must specify a LIMIT of less than or equal to 10000
-
-### Hints for conversions questions
-    https://developers.google.com/google-ads/api/docs/conversions/upload-summaries 
-
-
-### Hints for all fields
-    What follows is a table of resources and their selectable fields (fields), filterable fields (used in the condition) and sortable fields (use in the ordering)
-    Fields are comma separated, the whole field must be used, wildcards and partial fields are not allowed
-    All fields must come from this table and be prefixed with the resource being searched
-    {file_content}
+### Common segment fields (prefix with segments.)
+date, device, ad_network_type, conversion_action, conversion_action_name, click_type, slot, day_of_week, month, quarter, year
 """
 
 
-# The `search` tool requires a more complex description that's generated at
-# runtime. Uses the `add_tool` method instead of an annnotation since `add_tool`
-# provides the flexibility needed to generate the description while also
-# including the `search` method's docstring.
+# Register the search tool with a compact description instead of embedding the full 400KB JSON
 mcp.add_tool(
     search,
     title="Fetches data from the Google Ads API using the search method",
-    description=_search_tool_description(),
+    description=_SEARCH_DESCRIPTION,
 )
+
+
+@mcp.tool()
+def list_gaql_resources() -> List[str]:
+    """Lists all available GAQL resource names that can be used in the 'resource' parameter of the search tool."""
+    return _list_resources()
+
+
+@mcp.tool()
+def describe_gaql_resource(resource_name: str) -> Dict[str, Any]:
+    """Returns the selectable, filterable, and sortable fields for a specific GAQL resource.
+    Use this before writing a search query to get the exact field names.
+
+    Args:
+        resource_name: The GAQL resource name (e.g. 'campaign', 'ad_group', 'ad_group_ad')
+    """
+    return _describe_resource(resource_name)
