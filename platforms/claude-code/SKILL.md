@@ -5,8 +5,8 @@ description: "Expert Google Ads campaign analysis, diagnosis, and management. Us
 
 <!--
   CLAUDE CODE SKILL
-  Install: cp -r platforms/claude-code/ .claude/skills/google-ads-analyzer/
-  Then copy references/ into .claude/skills/google-ads-analyzer/references/
+  Recommended install (from your project root): bash scripts/install.sh claude-code
+  This copies SKILL.md + references/ into .claude/skills/google-ads-analyzer/.
 -->
 
 # Google Ads Analysis & Diagnosis Skill
